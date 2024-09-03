@@ -1,6 +1,5 @@
 const express = require('express');
 const app = express();
-
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const PORT = 8000;
@@ -48,3 +47,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
