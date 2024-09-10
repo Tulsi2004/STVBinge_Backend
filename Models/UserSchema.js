@@ -16,14 +16,17 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    blogs:{
+    bookings:{
         type: Array,
         default: [],
-    }
+    },
+    city:{
+        type: String,
+        required: true,
+    } 
 },{
-    timestamps : true    
+    timestamps: true
 })
-
 
 userSchema.pre('save', async function (next) {
     const user = this;

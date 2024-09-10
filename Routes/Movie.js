@@ -102,7 +102,7 @@ router.post('/createscreen', adminTokenHandler, async (req, res, next) => {
     }
 })
 router.post('/addmoviescheduletoscreen', adminTokenHandler, async (req, res, next) => {
-    console.log("Inside addmoviescheduletoscreen")
+    //console.log("Inside addmoviescheduletoscreen")
     try {
         const { screenId, movieId, showTime, showDate } = req.body;
         const screen = await Screen.findById(screenId);
