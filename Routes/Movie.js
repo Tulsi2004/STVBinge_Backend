@@ -81,7 +81,7 @@ router.post('/createscreen', adminTokenHandler, async (req, res, next) => {
         const { name, location, seats, city, screenType } = req.body;
         const newScreen = new Screen({
             name,
-            location,
+            location, // Ensure this is being set correctly
             seats,
             city: city.toLowerCase(),
             screenType,
@@ -89,7 +89,6 @@ router.post('/createscreen', adminTokenHandler, async (req, res, next) => {
         });
 
         await newScreen.save();
-
 
         res.status(201).json({
             ok: true,
@@ -100,7 +99,8 @@ router.post('/createscreen', adminTokenHandler, async (req, res, next) => {
         console.log(err);
         next(err); // Pass any errors to the error handling middleware
     }
-})
+});
+
 router.post('/addmoviescheduletoscreen', adminTokenHandler, async (req, res, next) => {
     //console.log("Inside addmoviescheduletoscreen")
     try {
@@ -148,10 +148,7 @@ router.post('/bookticket', authTokenHandler, async (req, res, next) => {
         const { showTime, showDate, movieId, screenId, seats, totalPrice, paymentId, paymentType } = req.body;
         console.log(req.body);
 
-        // You can create a function to verify payment id
-
         const screen = await Screen.findById(screenId);
-
         if (!screen) {
             return res.status(404).json({
                 ok: false,
@@ -159,20 +156,21 @@ router.post('/bookticket', authTokenHandler, async (req, res, next) => {
             });
         }
 
-
-
         const movieSchedule = screen.movieSchedules.find(schedule => {
-            console.log(schedule);
-            let showDate1 = new Date(schedule.showDate);
-            let showDate2 = new Date(showDate);
-            if (showDate1.getDay() === showDate2.getDay() &&
-                showDate1.getMonth() === showDate2.getMonth() &&
-                showDate1.getFullYear() === showDate2.getFullYear() &&
-                schedule.showTime === showTime &&
-                schedule.movieId == movieId) {
-                return true;
-            }
-            return false;
+            const showDate1 = new Date(schedule.showDate);
+            const showDate2 = new Date(showDate);
+
+            const datesMatch = showDate1.getDate() === showDate2.getDate() &&
+                               showDate1.getMonth() === showDate2.getMonth() &&
+                               showDate1.getFullYear() === showDate2.getFullYear();
+
+             const movieIdsMatch = schedule.movieId.equals(movieId); // Use equals for ObjectId comparison
+
+            // return datesMatch && movieIdsMatch && schedule.showTime === showTime;
+
+            // return showDate1.toDateString() === showDate2.toDateString() &&
+            // schedule.showTime === showTime &&
+            // schedule.movieId.toString() === movieId; 
         });
 
         if (!movieSchedule) {
@@ -189,30 +187,38 @@ router.post('/bookticket', authTokenHandler, async (req, res, next) => {
                 message: "User not found"
             });
         }
-        console.log('before newBooking done');
-        const newBooking = new Booking({ userId: req.userId, showTime, showDate, movieId, screenId, seats, totalPrice, paymentId, paymentType })
+
+        const newBooking = new Booking({
+            userId: req.userId,
+            showTime,
+            showDate,
+            movieId,
+            screenId,
+            seats,
+            totalPrice,
+            paymentId,
+            paymentType
+        });
         await newBooking.save();
-        console.log('newBooking done');
-
-
 
         movieSchedule.notAvailableSeats.push(...seats);
         await screen.save();
-        console.log('screen saved');
 
         user.bookings.push(newBooking._id);
         await user.save();
-        console.log('user saved');
+
         res.status(201).json({
             ok: true,
             message: "Booking successful"
         });
 
-    }
-    catch (err) {
+    } catch (err) {
         next(err); // Pass any errors to the error handling middleware
     }
-})
+});
+
+
+
 
 
 router.get('/movies', async (req, res, next) => {
@@ -339,18 +345,17 @@ router.get('/schedulebymovie/:screenid/:date/:movieid', async (req, res, next) =
         }
         return false;
     });
-    console.log(movieSchedules)
 
     if (!movieSchedules) {
         return res.status(404).json(createResponse(false, 'Movie schedule not found', null));
     }
 
     res.status(200).json(createResponse(true, 'Movie schedule retrieved successfully', {
-        screen,
+        screen, // Ensure this includes the location
         movieSchedulesforDate: movieSchedules
     }));
-
 });
+
 
 
 router.get('/getuserbookings' , authTokenHandler , async (req , res , next) => {
