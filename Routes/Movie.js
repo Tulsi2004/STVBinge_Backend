@@ -141,6 +141,11 @@ router.post('/addmoviescheduletoscreen', adminTokenHandler, async (req, res, nex
     }
 })
 
+//test
+router.post("/test", async(req, res, next) => {
+    res.send(200);
+}
+)
 
 // user access
 router.post('/bookticket', authTokenHandler, async (req, res, next) => {
@@ -164,15 +169,19 @@ router.post('/bookticket', authTokenHandler, async (req, res, next) => {
                                showDate1.getMonth() === showDate2.getMonth() &&
                                showDate1.getFullYear() === showDate2.getFullYear();
 
-             const movieIdsMatch = schedule.movieId.equals(movieId); // Use equals for ObjectId comparison
+            const movieIdsMatch = schedule.movieId.equals(movieId); // Use equals for ObjectId comparison
+
+            if (movieIdsMatch) {
+                return true
+            }
 
             // return datesMatch && movieIdsMatch && schedule.showTime === showTime;
 
             // return showDate1.toDateString() === showDate2.toDateString() &&
             // schedule.showTime === showTime &&
-            // schedule.movieId.toString() === movieId; 
+            // schedule.movieId.toString() === movieId;     
         });
-
+        console.log(movieSchedule)
         if (!movieSchedule) {
             return res.status(404).json({
                 ok: false,
@@ -240,6 +249,7 @@ router.get('/movies/:id', async (req, res, next) => {
     try {
         const movieId = req.params.id;
         const movie = await Movie.findById(movieId);
+        console.log(movie)
         if (!movie) {
             // If the movie is not found, return a 404 Not Found response
             return res.status(404).json({

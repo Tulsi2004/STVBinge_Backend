@@ -40,6 +40,7 @@ app.use('/admin', adminRoutes);
 app.use('/movie', movieRoutes);
 app.use('/image', imageuploadRoutes);
 
+
 app.get('/', (req, res) => {
     res.json({ message: 'The API is working' });
 });
