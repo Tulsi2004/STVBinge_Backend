@@ -31,19 +31,28 @@ router.get('/test', async (req, res) => {
 // admin access
 router.post('/createmovie', adminTokenHandler, async (req, res, next) => {
     try {
-        const { title, description, portraitImgUrl, landscapeImgUrl, rating, genre, duration } = req.body;
+        const { title } = req.body;
+        
+        // Check if the movie already exists by title
+        const existingMovie = await Movie.findOne({ title });
+        if (existingMovie) {
+            return res.status(400).json({ ok: false, message: "Movie already exists" });
+        }
 
-        const newMovie = new Movie({ title, description, portraitImgUrl, landscapeImgUrl, rating, genre, duration })
+        // If the movie doesn't exist, create a new movie
+        const newMovie = new Movie(req.body);
         await newMovie.save();
-        res.status(201).json({
+        
+        return res.status(201).json({
             ok: true,
-            message: "Movie added successfully"
+            message: "Movie added successfully",
+            data: newMovie
         });
-    }
-    catch (err) {
+    } catch (err) {
         next(err); // Pass any errors to the error handling middleware
     }
-})
+});
+
 router.post('/addcelebtomovie', adminTokenHandler, async (req, res, next) => {
     try {
         const { movieId, celebType, celebName, celebRole, celebImage } = req.body;
@@ -226,10 +235,6 @@ router.post('/bookticket', authTokenHandler, async (req, res, next) => {
     }
 });
 
-
-
-
-
 router.get('/movies', async (req, res, next) => {
     try {
         const movies = await Movie.find();
@@ -407,6 +412,55 @@ router.get('/getuserbookings/:id' , authTokenHandler , async (req , res , next) 
         next(err); // Pass any errors to the error handling middleware
     }
 })
+
+
+
+
+const checkDuplicateMovie = async (req, res) => {
+    try {
+        const { title } = req.query;
+        const movie = await Movie.findOne({ title });
+
+        if (movie) {
+            return res.json({ exists: true });
+        }
+
+        return res.json({ exists: false });
+    } catch (error) {
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+router.get('/checkduplicate', checkDuplicateMovie)
+
+
+// Delete movie route
+router.delete('/deletemovie/:id', adminTokenHandler, async (req, res, next) => {
+    try {
+        const movieId = req.params.id;
+        const movie = await Movie.findByIdAndDelete(movieId);
+
+        if (!movie) {
+            return res.status(404).json({
+                ok: false,
+                message: "Movie not found"
+            });
+        }
+
+        res.status(200).json({
+            ok: true,
+            message: "Movie deleted successfully"
+        });
+    } catch (err) {
+        next(err); // Pass errors to middleware
+    }
+});
+
+
+
+
+
+
 
 
 

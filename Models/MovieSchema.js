@@ -1,9 +1,17 @@
 const mongoose = require('mongoose');
 
+const celebSchema = new mongoose.Schema({
+    celebType: String,
+    celebName: String,
+    celebRole: String,
+    celebImage: String
+});
+
 const movieSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        unique: true // no duplicate titles
     },
     description: {
         type: String,
@@ -22,30 +30,24 @@ const movieSchema = new mongoose.Schema({
         required: true
     },
     genre: {
-        type: [String], // You can store multiple genres as an array of strings
+        type: [String],
         required: true
     },
     duration: {
-        type: Number, // Duration in minutes
+        type: Number,
         required: true
     },
-    cast: [
-        {
-            celebType : String,
-            celebName : String,
-            celebRole : String,
-            celebImage : String
-        }
-    ],
-    crew: [
-        {
-            celebType : String,
-            celebName : String,
-            celebRole : String,
-            celebImage : String
-        }
-    ]
-});
+    cast: {
+        type: [celebSchema],
+        default: []
+    },
+    crew: {
+        type: [celebSchema],
+        default: []
+    }
+}, { timestamps: true }); // track movie creation and updates
+
+movieSchema.index({ title: 1 }); // for faster queries
 
 const Movie = mongoose.model('Movie', movieSchema);
 

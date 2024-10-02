@@ -12,6 +12,7 @@ const movieRoutes = require('./Routes/Movie');
 const imageuploadRoutes = require('./Routes/imageUploadRoutes');
 
 
+
 require('dotenv').config();
 require('./db')
 
